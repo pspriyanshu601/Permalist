@@ -22,7 +22,7 @@ let currentUserId=1;
 
 app.get("/",async (req,res)=>{
     const result=await db.query("SELECT * FROM users");
-    const result1=await db.query("SELECT * FROM lists WHERE user_id=$1 ORDER BY priority DESC ",[currentUserId]);
+    const result1=await db.query("SELECT * FROM lists WHERE user_id=$1 ORDER BY p_num DESC ",[currentUserId]);
     // console.log(result.rows);
     // console.log(result1.rows);
     res.render("index.ejs",{
@@ -63,13 +63,33 @@ app.post("/delete",async (req,res)=>{
 })
 app.post("/edit",async (req,res)=>{
     console.log(req.body);
-    await db.query("UPDATE lists SET item_name=$1,priority=$2 WHERE id=$3",[req.body.updatedItemTitle,req.body.updatedPriority,req.body.updatedItemId]);
+    let pnum;
+    if(req.body.updatedPriority=="high"){
+        pnum=3;
+    }
+    else if(req.body.updatedPriority=="low"){
+        pnum=1;
+    }
+    else{
+        pnum=2;
+    }
+    await db.query("UPDATE lists SET item_name=$1,priority=$2,p_num=$3 WHERE id=$4",[req.body.updatedItemTitle,req.body.updatedPriority,pnum,req.body.updatedItemId]);
     res.redirect("/");
 })
 
 app.post("/add",async (req,res)=>{
     console.log(req.body);
-    await db.query("INSERT INTO lists (item_name,user_id,priority) VALUES ($1,$2,$3)",[req.body.newItem,req.body.list,req.body.priority]);
+    let pnum;
+    if(req.body.priority=="high"){
+        pnum=3;
+    }
+    else if(req.body.priority=="low"){
+        pnum=1;
+    }
+    else{
+        pnum=2;
+    }
+    await db.query("INSERT INTO lists (item_name,user_id,priority,deadline,p_num) VALUES ($1,$2,$3,$4,$5)",[req.body.newItem,req.body.list,req.body.priority,req.body.deadline,pnum]);
     res.redirect("/");
 })
 
